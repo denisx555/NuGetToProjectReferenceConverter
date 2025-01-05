@@ -1,0 +1,7 @@
+﻿################################################################################
+# Данный GITIGNORE-файл был автоматически создан Microsoft(R) Visual Studio.
+################################################################################
+
+/src/NuGetToProjectReferenceConverter/obj
+/src/NuGetToProjectReferenceConverter/bin/Debug
+/src/NuGetToProjectReferenceConverter/.vs/NuGetToProjectReferenceConverter
