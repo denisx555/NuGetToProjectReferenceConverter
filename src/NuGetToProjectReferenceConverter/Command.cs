@@ -1,10 +1,11 @@
 ﻿using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGetToProjectReferenceConverter.Services.DbgMapFile;
+using NuGetToProjectReferenceConverter.Services.DbgPath;
+using NuGetToProjectReferenceConverter.Services.DbgSolution;
 using System;
 using System.ComponentModel.Design;
 using System.Globalization;
-using System.Threading;
-using System.Threading.Tasks;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGetToProjectReferenceConverter
@@ -57,7 +58,7 @@ namespace NuGetToProjectReferenceConverter
         /// <summary>
         /// Gets the service provider from the owner package.
         /// </summary>
-        private Microsoft.VisualStudio.Shell.IAsyncServiceProvider ServiceProvider
+        private IAsyncServiceProvider ServiceProvider
         {
             get
             {
@@ -89,10 +90,19 @@ namespace NuGetToProjectReferenceConverter
         private void Execute(object sender, EventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            string message = string.Format(CultureInfo.CurrentCulture, "Inside {0}.MenuItemCallback()", this.GetType().FullName);
+
+            IDbgSolutionService dbgSolutionService = new DbgSolutionService((IServiceProvider)ServiceProvider);
+            IDbgPathService dbgPathService = new DbgPathService(dbgSolutionService.GetSolutionDirectory());
+            IDbgMapFileService dbgMapFileService = new DbgMapFileService(dbgSolutionService, dbgPathService);
+
+
+            var replaceNuGetWithProjectReference = new ReplaceNuGetWithProjectReference(dbgSolutionService, dbgMapFileService);
+            replaceNuGetWithProjectReference.Execute();
+
+
+            string message = string.Format(CultureInfo.CurrentCulture, "Операция выполнена успешно!");
             string title = "Command";
 
-            // Show a message box to prove we were here
             VsShellUtilities.ShowMessageBox(
                 this.package,
                 message,
