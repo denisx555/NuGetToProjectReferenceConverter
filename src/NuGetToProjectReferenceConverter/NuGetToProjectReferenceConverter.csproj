@@ -51,6 +51,7 @@
     <Compile Include="ReplaceNuGetWithProjectReference.cs" />
     <Compile Include="Services\DbgMapFile\DbgMapFileService.cs" />
     <Compile Include="Services\DbgMapFile\IDbgMapFileService.cs" />
+    <Compile Include="Services\DbgPath\DbgPathService.cs" />
     <Compile Include="Services\DbgPath\IDbgPathService.cs" />
     <Compile Include="Services\DbgSolution\DbgSolutionService.cs" />
     <Compile Include="Services\DbgSolution\IDbgSolutionService.cs" />
@@ -72,7 +73,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.0.32112.339" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.12.40392" ExcludeAssets="runtime">
+      <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="17.12.2069" />
   </ItemGroup>
   <ItemGroup>

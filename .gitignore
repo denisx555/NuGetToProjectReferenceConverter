@@ -6,3 +6,6 @@
 /src/NuGetToProjectReferenceConverter/bin/Debug
 /src/NuGetToProjectReferenceConverter/.vs/NuGetToProjectReferenceConverter
 /src/NuGetToProjectReferenceConverter/.vs
+/src/NuGetToProjectReferenceConverter.Tests/bin/Debug
+/src/NuGetToProjectReferenceConverter.Tests/obj/Debug
+/src/NuGetToProjectReferenceConverter/packages
