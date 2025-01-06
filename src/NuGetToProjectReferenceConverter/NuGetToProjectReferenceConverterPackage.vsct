@@ -15,7 +15,7 @@
         <Parent guid="guidNuGetToProjectReferenceConverterPackageCmdSet" id="SolutionContextMenuGroup" />
         <Icon guid="guidImages" id="bmpPic1" />
         <Strings>
-          <ButtonText>Replace NuGet with Project References 2</ButtonText>
+          <ButtonText>Replace NuGet with Project References</ButtonText>
         </Strings>
       </Button>
     </Buttons>

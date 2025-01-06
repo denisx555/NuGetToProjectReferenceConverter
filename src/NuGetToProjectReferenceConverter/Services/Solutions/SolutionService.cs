@@ -12,7 +12,7 @@ namespace NuGetToProjectReferenceConverter.Services.Solutions
     /// </summary>
     public class SolutionService : ISolutionService
     {
-        private const string ReplacedProjectsFolderName = "ReplacedProjects";
+        private const string ReplacedProjectsFolderName = "!ReplacedProjects";
 
         private readonly IServiceProvider _serviceProvider;
         private ReplacedProjectsFolderItem _replacedProjectsFolder = null;
