@@ -11,13 +11,24 @@ using ProjectItem = Microsoft.Build.Evaluation.ProjectItem;
 
 namespace NuGetToProjectReferenceConverter
 {
-    public class ReplaceNuGetWithProjectReference
+    /// <summary>
+    /// Provides functionality to replace NuGet package references with project references.
+    /// Предоставляет функциональность для замены ссылок на пакеты NuGet на ссылки на проекты.
+    /// </summary>
+    public class NuGetToProjectReferenceConverter
     {
         private readonly ISolutionService _solutionService;
         private readonly IMapFileService _mapFileService;
         private readonly IPathService _pathService;
 
-        public ReplaceNuGetWithProjectReference(ISolutionService solutionService,
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NuGetToProjectReferenceConverter"/> class.
+        /// Инициализирует новый экземпляр класса <see cref="NuGetToProjectReferenceConverter"/>.
+        /// </summary>
+        /// <param name="solutionService">The solution service. Сервис решения.</param>
+        /// <param name="mapFileService">The map file service. Сервис файла карты.</param>
+        /// <param name="pathService">The path service. Сервис путей.</param>
+        public NuGetToProjectReferenceConverter(ISolutionService solutionService,
             IMapFileService mapFileService,
             IPathService pathService)
         {
@@ -28,6 +39,10 @@ namespace NuGetToProjectReferenceConverter
             _mapFileService.LoadOrCreateIfNotExists();
         }
 
+        /// <summary>
+        /// Executes the conversion of NuGet package references to project references.
+        /// Выполняет преобразование ссылок на пакеты NuGet в ссылки на проекты.
+        /// </summary>
         public void Execute()
         {
             var projects = _solutionService.GetAllProjects().ToArray();
@@ -70,13 +85,13 @@ namespace NuGetToProjectReferenceConverter
                     {
                         msbuildProject.RemoveItem(packageReference);
 
-                        // Преобразование абсолютного пути в относительный                        
+                        // Convert absolute path to relative path
                         var relativeProjectReferencePath = _pathService.ToRelativePath(Path.GetDirectoryName(project.FullName),
                             projectReferencePath);
 
                         projectReferences.Add(msbuildProject.AddItem("ProjectReference", relativeProjectReferencePath).First());
 
-                        // Добавление перепривязанного проекта в решение
+                        // Add the re-referenced project to the solution
                         _solutionService.AddProjectToReplacedProjectsFolder(projectReferencePath);
                     }
                 }
@@ -87,12 +102,12 @@ namespace NuGetToProjectReferenceConverter
 
         private string FindProjectPathByPackageId(string packageId)
         {
-            if (!_mapFileService.Get(packageId, out string result))
+            if (!_mapFileService.Get(packageId, out string projectPath))
             {
                 _mapFileService.AddOrUpdate(packageId, null);
             }
 
-            return result;
+            return projectPath;
         }
     }
 }

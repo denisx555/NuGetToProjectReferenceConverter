@@ -48,7 +48,7 @@
     <Compile Include="Command.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="NuGetToProjectReferenceConverterPackage.cs" />
-    <Compile Include="ReplaceNuGetWithProjectReference.cs" />
+    <Compile Include="NuGetToProjectReferenceConverter.cs" />
     <Compile Include="Services\Solutions\SolutionService.cs" />
     <Compile Include="Services\Solutions\ISolutionService.cs" />
     <Compile Include="Services\Solutions\ReplacedProjectsFolderItem.cs" />

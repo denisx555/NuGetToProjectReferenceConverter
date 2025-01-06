@@ -95,7 +95,7 @@ namespace NuGetToProjectReferenceConverter
             IPathService pathService = new PathService();
             IMapFileService mapFileService = new MapFileService(solutionService, pathService);
 
-            var replaceNuGetWithProjectReference = new ReplaceNuGetWithProjectReference(solutionService, 
+            var replaceNuGetWithProjectReference = new NuGetToProjectReferenceConverter(solutionService, 
                 mapFileService,
                 pathService);
 
