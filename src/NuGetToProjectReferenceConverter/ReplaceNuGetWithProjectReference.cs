@@ -30,7 +30,7 @@ namespace NuGetToProjectReferenceConverter
 
         public void Execute()
         {
-            var projects = _solutionService.GetProjects().ToArray();
+            var projects = _solutionService.GetAllProjects().ToArray();
             foreach (var project in projects)
             {
                 ReplaceNuGetReferencesWithProjectReferences(project);
@@ -77,7 +77,7 @@ namespace NuGetToProjectReferenceConverter
                         projectReferences.Add(msbuildProject.AddItem("ProjectReference", relativeProjectReferencePath).First());
 
                         // Добавление перепривязанного проекта в решение
-                        _solutionService.AddProjectToCurrentReplacedProjectsFolder(projectReferencePath);
+                        _solutionService.AddProjectToReplacedProjectsFolder(projectReferencePath);
                     }
                 }
 

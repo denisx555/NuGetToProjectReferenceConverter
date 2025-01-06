@@ -6,40 +6,48 @@ using System.IO;
 
 namespace NuGetToProjectReferenceConverter.Services.Solutions
 {
+    /// <summary>
+    /// Provides methods to manage the solution.
+    /// Предоставляет методы для управления решением.
+    /// </summary>
     public class SolutionService : ISolutionService
     {
         private const string ReplacedProjectsFolderName = "ReplacedProjects";
 
         private readonly IServiceProvider _serviceProvider;
-        private ReplacedProjectsFolderItem _currentReplacedProjectsFolder = null;
+        private ReplacedProjectsFolderItem _replacedProjectsFolder = null;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SolutionService"/> class.
+        /// Инициализирует новый экземпляр класса <see cref="SolutionService"/>.
+        /// </summary>
+        /// <param name="serviceProvider">The service provider. Поставщик услуг.</param>
         public SolutionService(IServiceProvider serviceProvider)
         {
-            if (serviceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(serviceProvider));
-            }
-
-            _serviceProvider = serviceProvider;
+            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         }
 
-        public IEnumerable<EnvDTE.Project> GetProjects()
+        /// <summary>
+        /// Gets all projects in the solution.
+        /// Получает все проекты в решении.
+        /// </summary>
+        /// <returns>A collection of projects. Коллекция проектов.</returns>
+        public IEnumerable<EnvDTE.Project> GetAllProjects()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             var dte = (EnvDTE.DTE)_serviceProvider.GetService(typeof(EnvDTE.DTE));
-
             var solution = dte.Solution;
 
             foreach (EnvDTE.Project project in solution.Projects)
             {
-                foreach (EnvDTE.Project projectResult in GetNextItemsProject(project))
+                foreach (EnvDTE.Project projectResult in GetSubProjects(project))
                 {
                     yield return projectResult;
                 }
             }
         }
 
-        private IEnumerable<EnvDTE.Project> GetNextItemsProject(EnvDTE.Project project)
+        private IEnumerable<EnvDTE.Project> GetSubProjects(EnvDTE.Project project)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -49,9 +57,9 @@ namespace NuGetToProjectReferenceConverter.Services.Solutions
                 {
                     if (item.SubProject != null)
                     {
-                        foreach (EnvDTE.Project projectResult in GetNextItemsProject(item.SubProject))
+                        foreach (EnvDTE.Project subProject in GetSubProjects(item.SubProject))
                         {
-                            yield return projectResult;
+                            yield return subProject;
                         }
                     }
                 }
@@ -62,19 +70,19 @@ namespace NuGetToProjectReferenceConverter.Services.Solutions
             }
         }
 
-        private ReplacedProjectsFolderItem GetCurrentReplacedProjectsFolder()
+        private ReplacedProjectsFolderItem GetReplacedProjectsFolder()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            if (_currentReplacedProjectsFolder != null)
+            if (_replacedProjectsFolder != null)
             {
-                return _currentReplacedProjectsFolder;
+                return _replacedProjectsFolder;
             }
 
             var dte = (EnvDTE.DTE)_serviceProvider.GetService(typeof(EnvDTE.DTE));
             var solution = (Solution2)dte.Solution;
 
-            // Найти или создать папку для перепривязанных проектов
+            // Find or create the folder for replaced projects
             EnvDTE.Project replacedProjectsFolder = null;
             foreach (EnvDTE.Project project in solution.Projects)
             {
@@ -88,39 +96,48 @@ namespace NuGetToProjectReferenceConverter.Services.Solutions
             if (replacedProjectsFolder == null)
             {
                 replacedProjectsFolder = solution.AddSolutionFolder(ReplacedProjectsFolderName);
-                _currentReplacedProjectsFolder = new ReplacedProjectsFolderItem(replacedProjectsFolder);
             }
 
-            return _currentReplacedProjectsFolder;
+            _replacedProjectsFolder = new ReplacedProjectsFolderItem(replacedProjectsFolder);
+            return _replacedProjectsFolder;
         }
 
-        public void AddProjectToCurrentReplacedProjectsFolder(string projectPath)
+        /// <summary>
+        /// Adds a project to the current replaced projects folder.
+        /// Добавляет проект в текущую папку замененных проектов.
+        /// </summary>
+        /// <param name="projectPath">The path to the project. Путь к проекту.</param>
+        public void AddProjectToReplacedProjectsFolder(string projectPath)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            var currentReplacedProjectsFolder = GetCurrentReplacedProjectsFolder();
+            var replacedProjectsFolder = GetReplacedProjectsFolder();
             var projectName = Path.GetFileNameWithoutExtension(projectPath);
 
-            // Проверка на существование проекта в решении
-            foreach (EnvDTE.ProjectItem item in currentReplacedProjectsFolder.ProjectItems)
+            // Check if the project already exists in the folder
+            foreach (EnvDTE.ProjectItem item in replacedProjectsFolder.ProjectItems)
             {
                 if (item.Name == projectName)
                 {
-                    // Проект уже существует в папке
+                    // Project already exists in the folder
                     return;
                 }
             }
 
-            currentReplacedProjectsFolder.AddFromFile(projectPath);
+            replacedProjectsFolder.AddFromFile(projectPath);
         }
 
+        /// <summary>
+        /// Gets the directory of the solution.
+        /// Получает каталог решения.
+        /// </summary>
+        /// <returns>The solution directory. Каталог решения.</returns>
         public string GetSolutionDirectory()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
             var dte = (EnvDTE.DTE)_serviceProvider.GetService(typeof(EnvDTE.DTE));
-            var solutionDirectory = Path.GetDirectoryName(dte.Solution.FullName);
-            return solutionDirectory;
+            return Path.GetDirectoryName(dte.Solution.FullName);
         }
     }
 }
