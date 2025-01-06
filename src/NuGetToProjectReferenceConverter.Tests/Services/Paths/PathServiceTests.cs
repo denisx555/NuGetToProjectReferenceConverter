@@ -1,9 +1,9 @@
 ﻿using System.IO;
 using Xunit;
 
-namespace NuGetToProjectReferenceConverter.Services.DbgPath.Tests
+namespace NuGetToProjectReferenceConverter.Services.Paths.Tests
 {
-    public class DbgPathServiceTests
+    public class PathServiceTests
     {
         [Theory]
         [InlineData("C:\\!dbg\\T2Plus.Spm\\Source\\", "C:\\!dbg\\Sezal\\Sezal.Core", "..\\..\\Sezal\\Sezal.Core")]
@@ -18,11 +18,11 @@ namespace NuGetToProjectReferenceConverter.Services.DbgPath.Tests
         public void ToRelativePathTest(string mainAbsolutePath, string relativePath, string expectedRelativePath)
         {
             // Arrange
-            var _dbgPathService = new DbgPathService(false);
+            var pathService = new PathService(false);
             string absolutePath = Path.Combine(mainAbsolutePath, relativePath);
 
             // Act
-            string result = _dbgPathService.ToRelativePath(mainAbsolutePath, absolutePath);
+            string result = pathService.ToRelativePath(mainAbsolutePath, absolutePath);
 
             // Assert
             Assert.Equal(expectedRelativePath, result);
@@ -38,10 +38,10 @@ namespace NuGetToProjectReferenceConverter.Services.DbgPath.Tests
         public void ToAbsolutePathTest(string mainAbsolutePath, string relativePath, string expectedAbsolutePath)
         {
             // Arrange
-            var _dbgPathService = new DbgPathService(false);
+            var pathService = new PathService(false);
 
             // Act
-            string result = _dbgPathService.ToAbsolutePath(mainAbsolutePath, relativePath);
+            string result = pathService.ToAbsolutePath(mainAbsolutePath, relativePath);
 
             // Assert
             Assert.Equal(expectedAbsolutePath, result);

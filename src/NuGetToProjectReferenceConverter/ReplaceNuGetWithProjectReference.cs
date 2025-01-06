@@ -1,8 +1,8 @@
 ﻿using Microsoft.Build.Evaluation;
 using Microsoft.VisualStudio.Shell;
 using NuGetToProjectReferenceConverter.Services.DbgMapFile;
-using NuGetToProjectReferenceConverter.Services.DbgPath;
 using NuGetToProjectReferenceConverter.Services.DbgSolution;
+using NuGetToProjectReferenceConverter.Services.Paths;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,15 +15,15 @@ namespace NuGetToProjectReferenceConverter
     {
         private readonly IDbgSolutionService _dbgSolutionService;
         private readonly IDbgMapFileService _dbgMapFileService;
-        private readonly IDbgPathService _dbgPathService;
+        private readonly IPathService _pathService;
 
         public ReplaceNuGetWithProjectReference(IDbgSolutionService dbgSolutionService,
             IDbgMapFileService dbgMapFileService,
-            IDbgPathService dbgPathService)
+            IPathService pathService)
         {
             _dbgSolutionService = dbgSolutionService ?? throw new ArgumentNullException(nameof(dbgSolutionService));
             _dbgMapFileService = dbgMapFileService ?? throw new ArgumentNullException(nameof(dbgMapFileService));
-            _dbgPathService = dbgPathService ?? throw new ArgumentNullException(nameof(dbgPathService));
+            _pathService = pathService ?? throw new ArgumentNullException(nameof(pathService));
 
             _dbgMapFileService.LoadOrCreateIfNotExists();
         }
@@ -71,7 +71,7 @@ namespace NuGetToProjectReferenceConverter
                         msbuildProject.RemoveItem(packageReference);
 
                         // Преобразование абсолютного пути в относительный                        
-                        var relativeProjectReferencePath = _dbgPathService.ToRelativePath(Path.GetDirectoryName(project.FullName),
+                        var relativeProjectReferencePath = _pathService.ToRelativePath(Path.GetDirectoryName(project.FullName),
                             projectReferencePath);
 
                         projectReferences.Add(msbuildProject.AddItem("ProjectReference", relativeProjectReferencePath).First());

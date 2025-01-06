@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
-using NuGetToProjectReferenceConverter.Services.DbgPath;
 using NuGetToProjectReferenceConverter.Services.DbgSolution;
+using NuGetToProjectReferenceConverter.Services.Paths;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,12 +13,12 @@ namespace NuGetToProjectReferenceConverter.Services.DbgMapFile
         private string _mapFilePath;
         private readonly Dictionary<string, string> _map;
         private readonly IDbgSolutionService _dbgSolutionService;
-        private readonly IDbgPathService _dbgPathService;
+        private readonly IPathService _pathService;
 
-        public DbgMapFileService(IDbgSolutionService dbgSolutionService, IDbgPathService dbgPathService)
+        public DbgMapFileService(IDbgSolutionService dbgSolutionService, IPathService pathService)
         {
             _dbgSolutionService = dbgSolutionService ?? throw new ArgumentNullException(nameof(dbgSolutionService));
-            _dbgPathService = dbgPathService ?? throw new ArgumentNullException(nameof(dbgPathService));
+            _pathService = pathService ?? throw new ArgumentNullException(nameof(pathService));
 
             _map = new Dictionary<string, string>();
         }
@@ -61,7 +61,7 @@ namespace NuGetToProjectReferenceConverter.Services.DbgMapFile
                 foreach (var kvp in loadedMap)
                 {
                     _map[kvp.Key] = kvp.Value != null 
-                        ? _dbgPathService.ToAbsolutePath(_dbgSolutionService.GetSolutionDirectory(), kvp.Value) 
+                        ? _pathService.ToAbsolutePath(_dbgSolutionService.GetSolutionDirectory(), kvp.Value) 
                         : null;
                 }
             }
@@ -73,7 +73,7 @@ namespace NuGetToProjectReferenceConverter.Services.DbgMapFile
             var sortedMap = new SortedDictionary<string, string>();
             foreach (var kvp in _map)
             {
-                sortedMap[kvp.Key] = _dbgPathService.ToRelativePath(_dbgSolutionService.GetSolutionDirectory(), kvp.Value);
+                sortedMap[kvp.Key] = _pathService.ToRelativePath(_dbgSolutionService.GetSolutionDirectory(), kvp.Value);
             }
 
             using (var stream = new StreamWriter(GetMapFilePath()))

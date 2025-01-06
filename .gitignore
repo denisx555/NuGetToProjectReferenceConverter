@@ -9,3 +9,4 @@
 /src/NuGetToProjectReferenceConverter.Tests/bin/Debug
 /src/NuGetToProjectReferenceConverter.Tests/obj/Debug
 /src/NuGetToProjectReferenceConverter/packages
+/src/NuGetToProjectReferenceConverter/NuGetToProjectReferenceConverter.csproj.user

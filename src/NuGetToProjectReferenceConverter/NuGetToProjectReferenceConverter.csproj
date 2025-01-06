@@ -51,11 +51,11 @@
     <Compile Include="ReplaceNuGetWithProjectReference.cs" />
     <Compile Include="Services\DbgMapFile\DbgMapFileService.cs" />
     <Compile Include="Services\DbgMapFile\IDbgMapFileService.cs" />
-    <Compile Include="Services\DbgPath\DbgPathService.cs" />
-    <Compile Include="Services\DbgPath\IDbgPathService.cs" />
     <Compile Include="Services\DbgSolution\DbgSolutionService.cs" />
     <Compile Include="Services\DbgSolution\IDbgSolutionService.cs" />
     <Compile Include="Services\DbgSolution\ReplacedProjectsFolderItem.cs" />
+    <Compile Include="Services\Paths\IPathService.cs" />
+    <Compile Include="Services\Paths\PathService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="source.extension.vsixmanifest">
