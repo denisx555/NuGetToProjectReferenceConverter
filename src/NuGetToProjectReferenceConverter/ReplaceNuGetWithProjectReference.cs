@@ -1,8 +1,8 @@
 ﻿using Microsoft.Build.Evaluation;
 using Microsoft.VisualStudio.Shell;
-using NuGetToProjectReferenceConverter.Services.DbgMapFile;
-using NuGetToProjectReferenceConverter.Services.DbgSolution;
+using NuGetToProjectReferenceConverter.Services.MapFile;
 using NuGetToProjectReferenceConverter.Services.Paths;
+using NuGetToProjectReferenceConverter.Services.Solutions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,30 +13,30 @@ namespace NuGetToProjectReferenceConverter
 {
     public class ReplaceNuGetWithProjectReference
     {
-        private readonly IDbgSolutionService _dbgSolutionService;
-        private readonly IDbgMapFileService _dbgMapFileService;
+        private readonly ISolutionService _solutionService;
+        private readonly IMapFileService _mapFileService;
         private readonly IPathService _pathService;
 
-        public ReplaceNuGetWithProjectReference(IDbgSolutionService dbgSolutionService,
-            IDbgMapFileService dbgMapFileService,
+        public ReplaceNuGetWithProjectReference(ISolutionService solutionService,
+            IMapFileService mapFileService,
             IPathService pathService)
         {
-            _dbgSolutionService = dbgSolutionService ?? throw new ArgumentNullException(nameof(dbgSolutionService));
-            _dbgMapFileService = dbgMapFileService ?? throw new ArgumentNullException(nameof(dbgMapFileService));
+            _solutionService = solutionService ?? throw new ArgumentNullException(nameof(solutionService));
+            _mapFileService = mapFileService ?? throw new ArgumentNullException(nameof(mapFileService));
             _pathService = pathService ?? throw new ArgumentNullException(nameof(pathService));
 
-            _dbgMapFileService.LoadOrCreateIfNotExists();
+            _mapFileService.LoadOrCreateIfNotExists();
         }
 
         public void Execute()
         {
-            var projects = _dbgSolutionService.GetProjects().ToArray();
+            var projects = _solutionService.GetProjects().ToArray();
             foreach (var project in projects)
             {
                 ReplaceNuGetReferencesWithProjectReferences(project);
             }
 
-            _dbgMapFileService.Save();
+            _mapFileService.Save();
         }
 
         private void ReplaceNuGetReferencesWithProjectReferences(EnvDTE.Project project)
@@ -77,7 +77,7 @@ namespace NuGetToProjectReferenceConverter
                         projectReferences.Add(msbuildProject.AddItem("ProjectReference", relativeProjectReferencePath).First());
 
                         // Добавление перепривязанного проекта в решение
-                        _dbgSolutionService.AddProjectToCurrentReplacedProjectsFolder(projectReferencePath);
+                        _solutionService.AddProjectToCurrentReplacedProjectsFolder(projectReferencePath);
                     }
                 }
 
@@ -87,9 +87,9 @@ namespace NuGetToProjectReferenceConverter
 
         private string FindProjectPathByPackageId(string packageId)
         {
-            if (!_dbgMapFileService.Get(packageId, out string result))
+            if (!_mapFileService.Get(packageId, out string result))
             {
-                _dbgMapFileService.AddOrUpdate(packageId, null);
+                _mapFileService.AddOrUpdate(packageId, null);
             }
 
             return result;

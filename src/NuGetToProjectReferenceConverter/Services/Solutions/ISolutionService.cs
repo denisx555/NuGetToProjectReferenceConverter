@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace NuGetToProjectReferenceConverter.Services.DbgSolution
+namespace NuGetToProjectReferenceConverter.Services.Solutions
 {
-    public interface IDbgSolutionService
+    public interface ISolutionService
     {
         IEnumerable<EnvDTE.Project> GetProjects();
         void AddProjectToCurrentReplacedProjectsFolder(string projectPath);

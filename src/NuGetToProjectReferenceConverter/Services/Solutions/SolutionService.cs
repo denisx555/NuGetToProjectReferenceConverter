@@ -4,16 +4,16 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace NuGetToProjectReferenceConverter.Services.DbgSolution
+namespace NuGetToProjectReferenceConverter.Services.Solutions
 {
-    public class DbgSolutionService : IDbgSolutionService
+    public class SolutionService : ISolutionService
     {
         private const string ReplacedProjectsFolderName = "ReplacedProjects";
 
         private readonly IServiceProvider _serviceProvider;
         private ReplacedProjectsFolderItem _currentReplacedProjectsFolder = null;
 
-        public DbgSolutionService(IServiceProvider serviceProvider)
+        public SolutionService(IServiceProvider serviceProvider)
         {
             if (serviceProvider == null)
             {

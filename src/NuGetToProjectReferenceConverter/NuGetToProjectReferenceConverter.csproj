@@ -49,11 +49,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="NuGetToProjectReferenceConverterPackage.cs" />
     <Compile Include="ReplaceNuGetWithProjectReference.cs" />
-    <Compile Include="Services\DbgMapFile\DbgMapFileService.cs" />
-    <Compile Include="Services\DbgMapFile\IDbgMapFileService.cs" />
-    <Compile Include="Services\DbgSolution\DbgSolutionService.cs" />
-    <Compile Include="Services\DbgSolution\IDbgSolutionService.cs" />
-    <Compile Include="Services\DbgSolution\ReplacedProjectsFolderItem.cs" />
+    <Compile Include="Services\Solutions\SolutionService.cs" />
+    <Compile Include="Services\Solutions\ISolutionService.cs" />
+    <Compile Include="Services\Solutions\ReplacedProjectsFolderItem.cs" />
+    <Compile Include="Services\MapFiles\IMapFileService.cs" />
+    <Compile Include="Services\MapFiles\MapFileService.cs" />
     <Compile Include="Services\Paths\IPathService.cs" />
     <Compile Include="Services\Paths\PathService.cs" />
   </ItemGroup>

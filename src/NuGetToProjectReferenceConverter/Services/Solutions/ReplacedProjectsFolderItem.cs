@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.Shell;
 using System;
 using System.Collections.Generic;
 
-namespace NuGetToProjectReferenceConverter.Services.DbgSolution
+namespace NuGetToProjectReferenceConverter.Services.Solutions
 {
     public class ReplacedProjectsFolderItem
     {

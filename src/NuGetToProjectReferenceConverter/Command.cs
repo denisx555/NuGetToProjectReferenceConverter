@@ -1,8 +1,8 @@
 ﻿using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using NuGetToProjectReferenceConverter.Services.DbgMapFile;
-using NuGetToProjectReferenceConverter.Services.DbgSolution;
+using NuGetToProjectReferenceConverter.Services.MapFile;
 using NuGetToProjectReferenceConverter.Services.Paths;
+using NuGetToProjectReferenceConverter.Services.Solutions;
 using System;
 using System.ComponentModel.Design;
 using System.Globalization;
@@ -91,12 +91,12 @@ namespace NuGetToProjectReferenceConverter
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            IDbgSolutionService dbgSolutionService = new DbgSolutionService((IServiceProvider)ServiceProvider);
+            ISolutionService solutionService = new SolutionService((IServiceProvider)ServiceProvider);
             IPathService pathService = new PathService();
-            IDbgMapFileService dbgMapFileService = new DbgMapFileService(dbgSolutionService, pathService);
+            IMapFileService mapFileService = new MapFileService(solutionService, pathService);
 
-            var replaceNuGetWithProjectReference = new ReplaceNuGetWithProjectReference(dbgSolutionService, 
-                dbgMapFileService,
+            var replaceNuGetWithProjectReference = new ReplaceNuGetWithProjectReference(solutionService, 
+                mapFileService,
                 pathService);
 
             replaceNuGetWithProjectReference.Execute();
