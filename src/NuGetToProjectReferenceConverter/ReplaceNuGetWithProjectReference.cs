@@ -1,6 +1,7 @@
 ﻿using Microsoft.Build.Evaluation;
 using Microsoft.VisualStudio.Shell;
 using NuGetToProjectReferenceConverter.Services.DbgMapFile;
+using NuGetToProjectReferenceConverter.Services.DbgPath;
 using NuGetToProjectReferenceConverter.Services.DbgSolution;
 using System;
 using System.Collections.Generic;
@@ -14,11 +15,15 @@ namespace NuGetToProjectReferenceConverter
     {
         private readonly IDbgSolutionService _dbgSolutionService;
         private readonly IDbgMapFileService _dbgMapFileService;
+        private readonly IDbgPathService _dbgPathService;
 
-        public ReplaceNuGetWithProjectReference(IDbgSolutionService dbgSolutionService, IDbgMapFileService dbgMapFileService)
+        public ReplaceNuGetWithProjectReference(IDbgSolutionService dbgSolutionService,
+            IDbgMapFileService dbgMapFileService,
+            IDbgPathService dbgPathService)
         {
             _dbgSolutionService = dbgSolutionService ?? throw new ArgumentNullException(nameof(dbgSolutionService));
             _dbgMapFileService = dbgMapFileService ?? throw new ArgumentNullException(nameof(dbgMapFileService));
+            _dbgPathService = dbgPathService ?? throw new ArgumentNullException(nameof(dbgPathService));
 
             _dbgMapFileService.LoadOrCreateIfNotExists();
         }
@@ -65,8 +70,9 @@ namespace NuGetToProjectReferenceConverter
                     {
                         msbuildProject.RemoveItem(packageReference);
 
-                        // Преобразование абсолютного пути в относительный
-                        var relativeProjectReferencePath = GetRelativePath(project.FullName, projectReferencePath);
+                        // Преобразование абсолютного пути в относительный                        
+                        var relativeProjectReferencePath = _dbgPathService.ToRelativePath(Path.GetDirectoryName(project.FullName),
+                            projectReferencePath);
 
                         projectReferences.Add(msbuildProject.AddItem("ProjectReference", relativeProjectReferencePath).First());
 
@@ -87,17 +93,6 @@ namespace NuGetToProjectReferenceConverter
             }
 
             return result;
-        }
-
-        private string GetRelativePath(string fromPath, string toPath)
-        {
-            var fromUri = new Uri(fromPath);
-            var toUri = new Uri(toPath);
-
-            var relativeUri = fromUri.MakeRelativeUri(toUri);
-            var relativePath = Uri.UnescapeDataString(relativeUri.ToString());
-
-            return relativePath.Replace('/', Path.DirectorySeparatorChar);
         }
     }
 }

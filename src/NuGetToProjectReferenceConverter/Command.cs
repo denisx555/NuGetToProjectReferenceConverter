@@ -92,13 +92,14 @@ namespace NuGetToProjectReferenceConverter
             ThreadHelper.ThrowIfNotOnUIThread();
 
             IDbgSolutionService dbgSolutionService = new DbgSolutionService((IServiceProvider)ServiceProvider);
-            IDbgPathService dbgPathService = new DbgPathService(dbgSolutionService.GetSolutionDirectory());
+            IDbgPathService dbgPathService = new DbgPathService();
             IDbgMapFileService dbgMapFileService = new DbgMapFileService(dbgSolutionService, dbgPathService);
 
+            var replaceNuGetWithProjectReference = new ReplaceNuGetWithProjectReference(dbgSolutionService, 
+                dbgMapFileService,
+                dbgPathService);
 
-            var replaceNuGetWithProjectReference = new ReplaceNuGetWithProjectReference(dbgSolutionService, dbgMapFileService);
             replaceNuGetWithProjectReference.Execute();
-
 
             string message = string.Format(CultureInfo.CurrentCulture, "Операция выполнена успешно!");
             string title = "Command";

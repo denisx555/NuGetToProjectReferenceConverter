@@ -9,46 +9,45 @@ namespace NuGetToProjectReferenceConverter.Services.DbgPath
     /// </summary>
     public class DbgPathService : IDbgPathService
     {
-        private readonly string _mainAbsolutePath;
+        private readonly bool _checkPathExists;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DbgPathService"/> class.
         /// Инициализирует новый экземпляр класса <see cref="DbgPathService"/>.
         /// </summary>
-        /// <param name="mainAbsolutePath">The main absolute path. Основной абсолютный путь.</param>
         /// <param name="checkPathExists">If set to <c>true</c>, checks if the path exists. Если установлено значение <c>true</c>, проверяет, существует ли путь.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="mainAbsolutePath"/> is null or empty. Выбрасывается, когда <paramref name="mainAbsolutePath"/> равно null или пусто.</exception>
-        /// <exception cref="DirectoryNotFoundException">Thrown when the directory does not exist and <paramref name="checkPathExists"/> is <c>true</c>. Выбрасывается, когда каталог не существует и <paramref name="checkPathExists"/> равно <c>true</c>.</exception>
-        public DbgPathService(string mainAbsolutePath, bool checkPathExists = true)
+        public DbgPathService(bool checkPathExists = true)
         {
-            if (string.IsNullOrEmpty(mainAbsolutePath))
-            {
-                throw new ArgumentNullException(nameof(mainAbsolutePath), "mainAbsolutePath cannot be null or empty.");
-            }
-
-            if (checkPathExists && !Directory.Exists(mainAbsolutePath))
-            {
-                throw new DirectoryNotFoundException($"The directory '{mainAbsolutePath}' does not exist.");
-            }
-
-            _mainAbsolutePath = mainAbsolutePath;
+            _checkPathExists = checkPathExists;
         }
 
         /// <summary>
         /// Converts an absolute path to a relative path.
         /// Преобразует абсолютный путь в относительный путь.
         /// </summary>
+        /// <param name="mainAbsolutePath">The main absolute path. Основной абсолютный путь.</param>
         /// <param name="absolutePath">The absolute path to convert. Абсолютный путь для преобразования.</param>
         /// <returns>The relative path. Относительный путь.</returns>
-        public string ToRelativePath(string absolutePath)
+        /// <exception cref="DirectoryNotFoundException">Thrown when the main absolute path does not exist and <paramref name="checkPathExists"/> is <c>true</c>. Выбрасывается, когда основной абсолютный путь не существует и <paramref name="checkPathExists"/> равно <c>true</c>.</exception>
+        public string ToRelativePath(string mainAbsolutePath, string absolutePath)
         {
+            if (_checkPathExists && !Directory.Exists(mainAbsolutePath))
+            {
+                throw new DirectoryNotFoundException($"The directory '{mainAbsolutePath}' does not exist.");
+            }
+
             if (string.IsNullOrEmpty(absolutePath))
             {
                 return absolutePath;
             }
 
-            var mainPathUri = new Uri(_mainAbsolutePath.EndsWith(Path.DirectorySeparatorChar.ToString()) ? _mainAbsolutePath : _mainAbsolutePath + Path.DirectorySeparatorChar);
-            var absolutePathUri = new Uri(absolutePath.EndsWith(Path.DirectorySeparatorChar.ToString()) ? absolutePath : absolutePath + Path.DirectorySeparatorChar);
+            var mainPathUri = new Uri(mainAbsolutePath.EndsWith(Path.DirectorySeparatorChar.ToString()) 
+                ? mainAbsolutePath 
+                : mainAbsolutePath + Path.DirectorySeparatorChar);
+
+            var absolutePathUri = new Uri(absolutePath.EndsWith(Path.DirectorySeparatorChar.ToString()) 
+                ? absolutePath 
+                : absolutePath + Path.DirectorySeparatorChar);
 
             if (mainPathUri == absolutePathUri)
             {
@@ -65,16 +64,23 @@ namespace NuGetToProjectReferenceConverter.Services.DbgPath
         /// Converts a relative path to an absolute path.
         /// Преобразует относительный путь в абсолютный путь.
         /// </summary>
+        /// <param name="mainAbsolutePath">The main absolute path. Основной абсолютный путь.</param>
         /// <param name="relativePath">The relative path to convert. Относительный путь для преобразования.</param>
         /// <returns>The absolute path. Абсолютный путь.</returns>
-        public string ToAbsolutePath(string relativePath)
+        /// <exception cref="DirectoryNotFoundException">Thrown when the main absolute path does not exist and <paramref name="checkPathExists"/> is <c>true</c>. Выбрасывается, когда основной абсолютный путь не существует и <paramref name="checkPathExists"/> равно <c>true</c>.</exception>
+        public string ToAbsolutePath(string mainAbsolutePath, string relativePath)
         {
-            if (string.IsNullOrEmpty(relativePath))
+            if (_checkPathExists && !Directory.Exists(mainAbsolutePath))
             {
-                return relativePath;
+                throw new DirectoryNotFoundException($"The directory '{mainAbsolutePath}' does not exist.");
             }
 
-            var absolutePath = Path.GetFullPath(Path.Combine(_mainAbsolutePath, relativePath));
+            if (string.IsNullOrEmpty(relativePath))
+            {                
+                return mainAbsolutePath;
+            }
+
+            var absolutePath = Path.GetFullPath(Path.Combine(mainAbsolutePath, relativePath));
             return absolutePath;
         }
     }

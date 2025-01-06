@@ -60,7 +60,9 @@ namespace NuGetToProjectReferenceConverter.Services.DbgMapFile
                 var loadedMap = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
                 foreach (var kvp in loadedMap)
                 {
-                    _map[kvp.Key] = _dbgPathService.ToAbsolutePath(kvp.Value);
+                    _map[kvp.Key] = kvp.Value != null 
+                        ? _dbgPathService.ToAbsolutePath(_dbgSolutionService.GetSolutionDirectory(), kvp.Value) 
+                        : null;
                 }
             }
         }
@@ -71,7 +73,7 @@ namespace NuGetToProjectReferenceConverter.Services.DbgMapFile
             var sortedMap = new SortedDictionary<string, string>();
             foreach (var kvp in _map)
             {
-                sortedMap[kvp.Key] = _dbgPathService.ToRelativePath(kvp.Value);
+                sortedMap[kvp.Key] = _dbgPathService.ToRelativePath(_dbgSolutionService.GetSolutionDirectory(), kvp.Value);
             }
 
             using (var stream = new StreamWriter(GetMapFilePath()))
