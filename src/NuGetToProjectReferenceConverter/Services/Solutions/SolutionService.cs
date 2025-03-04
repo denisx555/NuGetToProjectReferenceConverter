@@ -1,8 +1,11 @@
 ﻿using EnvDTE80;
+using Microsoft.Build.Evaluation;
 using Microsoft.VisualStudio.Shell;
+using NuGetToProjectReferenceConverter.Services.Paths;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace NuGetToProjectReferenceConverter.Services.Solutions
 {
@@ -15,6 +18,7 @@ namespace NuGetToProjectReferenceConverter.Services.Solutions
         private const string ReplacedProjectsFolderName = "!ReplacedProjects";
 
         private readonly IServiceProvider _serviceProvider;
+        private readonly IPathService _pathService;
         private ReplacedProjectsFolderItem _replacedProjectsFolder = null;
 
         /// <summary>
@@ -22,9 +26,10 @@ namespace NuGetToProjectReferenceConverter.Services.Solutions
         /// Инициализирует новый экземпляр класса <see cref="SolutionService"/>.
         /// </summary>
         /// <param name="serviceProvider">The service provider. Поставщик услуг.</param>
-        public SolutionService(IServiceProvider serviceProvider)
+        public SolutionService(IServiceProvider serviceProvider, IPathService pathService)
         {
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+            _pathService = pathService ?? throw new ArgumentNullException(nameof(pathService));
         }
 
         /// <summary>
@@ -107,9 +112,14 @@ namespace NuGetToProjectReferenceConverter.Services.Solutions
         /// Добавляет проект в текущую папку замененных проектов.
         /// </summary>
         /// <param name="projectPath">The path to the project. Путь к проекту.</param>
-        public void AddProjectToReplacedProjectsFolder(string projectPath)
+        public void AddProjectToReplacedProjectsFolder(string projectPath, List<string> addedList)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
+
+            if (addedList is null)
+            {
+                throw new ArgumentNullException(nameof(addedList));
+            }
 
             var replacedProjectsFolder = GetReplacedProjectsFolder();
             var projectName = Path.GetFileNameWithoutExtension(projectPath);
@@ -125,6 +135,20 @@ namespace NuGetToProjectReferenceConverter.Services.Solutions
             }
 
             replacedProjectsFolder.AddFromFile(projectPath);
+            addedList.Add(projectPath);
+
+            using (var projectCollection = new ProjectCollection())
+            {
+                var subProject = projectCollection.LoadProject(projectPath);
+                var items = subProject.GetItems("ProjectReference").ToArray();
+                var subProjectPath = Path.GetDirectoryName(subProject.FullPath);
+
+                foreach (var item in items)
+                {
+                    var subProjectAbsolutePath = _pathService.ToAbsolutePath(subProjectPath, item.EvaluatedInclude);
+                    AddProjectToReplacedProjectsFolder(subProjectAbsolutePath, addedList);
+                }
+            }            
         }
 
         /// <summary>

@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using ProjectItem = Microsoft.Build.Evaluation.ProjectItem;
 
 namespace NuGetToProjectReferenceConverter
 {
@@ -20,6 +19,8 @@ namespace NuGetToProjectReferenceConverter
         private readonly ISolutionService _solutionService;
         private readonly IMapFileService _mapFileService;
         private readonly IPathService _pathService;
+
+        private HashSet<string> _complited = new HashSet<string>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NuGetToProjectReferenceConverter"/> class.
@@ -45,6 +46,8 @@ namespace NuGetToProjectReferenceConverter
         /// </summary>
         public void Execute()
         {
+            _complited.Clear();
+
             var projects = _solutionService.GetAllProjects().ToArray();
             foreach (var project in projects)
             {
@@ -68,36 +71,62 @@ namespace NuGetToProjectReferenceConverter
                 return;
             }
 
+            if (!_complited.Add(project.FullName))
+            {
+                return;
+            }
+
             if (project.Kind != EnvDTE.Constants.vsProjectKindSolutionItems)
             {
-                var projectCollection = new ProjectCollection();
-                var msbuildProject = projectCollection.LoadProject(project.FullName);
-
-                var packageReferences = msbuildProject.GetItems("PackageReference").ToList();
-                var projectReferences = new List<ProjectItem>();
-
-                foreach (var packageReference in packageReferences)
+                using (var projectCollection = new ProjectCollection())
                 {
-                    var packageId = packageReference.EvaluatedInclude;
-                    var projectReferencePath = FindProjectPathByPackageId(packageId);
+                    var msbuildProject = projectCollection.LoadProject(project.FullName);
 
-                    if (!string.IsNullOrEmpty(projectReferencePath))
+                    var packageReferences = msbuildProject.GetItems("PackageReference").ToList();
+
+                    foreach (var packageReference in packageReferences)
                     {
-                        msbuildProject.RemoveItem(packageReference);
+                        var packageId = packageReference.EvaluatedInclude;
+                        var projectReferencePath = FindProjectPathByPackageId(packageId);
 
-                        // Convert absolute path to relative path
-                        var relativeProjectReferencePath = _pathService.ToRelativePath(Path.GetDirectoryName(project.FullName),
-                            projectReferencePath);
+                        if (!string.IsNullOrEmpty(projectReferencePath))
+                        {
+                            msbuildProject.RemoveItem(packageReference);
 
-                        projectReferences.Add(msbuildProject.AddItem("ProjectReference", relativeProjectReferencePath).First());
-
-                        // Add the re-referenced project to the solution
-                        _solutionService.AddProjectToReplacedProjectsFolder(projectReferencePath);
+                            var addedItems = AddProjectReference(project, msbuildProject, projectReferencePath);
+                            foreach (var item in addedItems)
+                            {
+                                ReplaceNuGetReferencesWithProjectReferences(item);
+                            }
+                        }
                     }
-                }
 
-                msbuildProject.Save();
+                    msbuildProject.Save();
+                }
             }
+        }
+
+        private EnvDTE.Project[] AddProjectReference(EnvDTE.Project project, Project msbuildProject, string projectReferencePath)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            // Convert absolute path to relative path
+            var relativeProjectReferencePath = _pathService.ToRelativePath(Path.GetDirectoryName(project.FullName),
+                projectReferencePath);
+
+            msbuildProject.AddItem("ProjectReference", relativeProjectReferencePath);
+
+            var addedList = new List<string>();
+
+            // Add the re-referenced project to the solution
+            _solutionService.AddProjectToReplacedProjectsFolder(projectReferencePath, addedList);
+
+            var resultItems = _solutionService
+                .GetAllProjects()                
+                .Where(r => addedList.Contains(r.FullName))
+                .ToArray();
+
+            return resultItems;
         }
 
         private string FindProjectPathByPackageId(string packageId)

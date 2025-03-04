@@ -20,7 +20,7 @@ namespace NuGetToProjectReferenceConverter.Services.Solutions
         /// Добавляет проект в текущую папку замененных проектов.
         /// </summary>
         /// <param name="projectPath">The path to the project. Путь к проекту.</param>
-        void AddProjectToReplacedProjectsFolder(string projectPath);
+        void AddProjectToReplacedProjectsFolder(string projectPath, List<string> addedList);
 
         /// <summary>
         /// Gets the directory of the solution.

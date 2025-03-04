@@ -91,8 +91,9 @@ namespace NuGetToProjectReferenceConverter
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            ISolutionService solutionService = new SolutionService((IServiceProvider)ServiceProvider);
             IPathService pathService = new PathService();
+
+            ISolutionService solutionService = new SolutionService((IServiceProvider)ServiceProvider, pathService);            
             IMapFileService mapFileService = new MapFileService(solutionService, pathService);
 
             var replaceNuGetWithProjectReference = new NuGetToProjectReferenceConverter(solutionService, 
@@ -102,7 +103,7 @@ namespace NuGetToProjectReferenceConverter
             replaceNuGetWithProjectReference.Execute();
 
             string message = string.Format(CultureInfo.CurrentCulture, "Операция выполнена успешно!");
-            string title = "Command";
+            string title = "Tool";
 
             VsShellUtilities.ShowMessageBox(
                 this.package,
