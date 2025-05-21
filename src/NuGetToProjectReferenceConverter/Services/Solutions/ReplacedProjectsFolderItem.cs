@@ -61,7 +61,7 @@ namespace NuGetToProjectReferenceConverter.Services.Solutions
         public void AddFromFile(string projectPath)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-
+            // TODO: Доработать при добвлении не существующего файла возникает малопонятная ошибка
             GetSolutionFolder().AddFromFile(projectPath);
         }
     }
