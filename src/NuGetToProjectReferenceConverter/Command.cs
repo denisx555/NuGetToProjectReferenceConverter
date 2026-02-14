@@ -1,11 +1,14 @@
-﻿using Microsoft.VisualStudio.Shell;
+﻿using EnvDTE;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGetToProjectReferenceConverter.Services.Indexing;
 using NuGetToProjectReferenceConverter.Services.MapFile;
 using NuGetToProjectReferenceConverter.Services.Paths;
 using NuGetToProjectReferenceConverter.Services.Solutions;
 using System;
 using System.ComponentModel.Design;
 using System.Globalization;
+using System.IO;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGetToProjectReferenceConverter
@@ -91,27 +94,65 @@ namespace NuGetToProjectReferenceConverter
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            IPathService pathService = new PathService();
+            try
+            {
+                // Получаем текущее решение
+                var dte = (DTE)ServiceProvider.GetServiceAsync(typeof(DTE)).GetAwaiter().GetResult();
+                if (dte?.Solution == null || string.IsNullOrEmpty(dte.Solution.FullName))
+                {
+                    VsShellUtilities.ShowMessageBox(
+                        this.package,
+                        "Откройте решение перед использованием конвертера.",
+                        "Ошибка",
+                        OLEMSGICON.OLEMSGICON_WARNING,
+                        OLEMSGBUTTON.OLEMSGBUTTON_OK,
+                        OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+                    return;
+                }
 
-            ISolutionService solutionService = new SolutionService((IServiceProvider)ServiceProvider, pathService);            
-            IMapFileService mapFileService = new MapFileService(solutionService, pathService);
+                var solutionPath = dte.Solution.FullName;
+                var solutionDir = Path.GetDirectoryName(solutionPath);
 
-            var replaceNuGetWithProjectReference = new NuGetToProjectReferenceConverter(solutionService, 
-                mapFileService,
-                pathService);
+                // Создаем сервисы
+                IPathService pathService = new PathService();
+                IProjectIndexService projectIndexService = new ProjectIndexService();
+                ISolutionService solutionService = new SolutionService((IServiceProvider)ServiceProvider, pathService, projectIndexService);
+                IMapFileService mapFileService = new MapFileService(solutionService, pathService);
 
-            replaceNuGetWithProjectReference.Execute();
+                // Инициализируем индекс проектов
+                // Используем директорию analysis (два уровня вверх от решения) как корневую для индексирования
+                var rootDirectory = Path.GetDirectoryName(Path.GetDirectoryName(solutionDir));
+                solutionService.InitializeProjectIndex(rootDirectory);
 
-            string message = string.Format(CultureInfo.CurrentCulture, "Операция выполнена успешно!");
-            string title = "Tool";
+                // Создаем конвертер и выполняем конвертацию
+                var replaceNuGetWithProjectReference = new NuGetToProjectReferenceConverter(solutionService,
+                    mapFileService,
+                    pathService);
 
-            VsShellUtilities.ShowMessageBox(
-                this.package,
-                message,
-                title,
-                OLEMSGICON.OLEMSGICON_INFO,
-                OLEMSGBUTTON.OLEMSGBUTTON_OK,
-                OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+                replaceNuGetWithProjectReference.Execute();
+
+                // Показываем сообщение об успехе
+                string message = string.Format(CultureInfo.CurrentCulture, "Операция выполнена успешно!");
+                string title = "Tool";
+
+                VsShellUtilities.ShowMessageBox(
+                    this.package,
+                    message,
+                    title,
+                    OLEMSGICON.OLEMSGICON_INFO,
+                    OLEMSGBUTTON.OLEMSGBUTTON_OK,
+                    OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+            }
+            catch (Exception ex)
+            {
+                VsShellUtilities.ShowMessageBox(
+                    this.package,
+                    $"Ошибка при конвертации: {ex.Message}",
+                    "Ошибка",
+                    OLEMSGICON.OLEMSGICON_CRITICAL,
+                    OLEMSGBUTTON.OLEMSGBUTTON_OK,
+                    OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+            }
         }
     }
 }

@@ -23,6 +23,13 @@ namespace NuGetToProjectReferenceConverter.Services.Solutions
         void AddProjectToReplacedProjectsFolder(string projectPath, List<string> addedList);
 
         /// <summary>
+        /// Initializes the project index before starting work.
+        /// Инициализирует индекс проектов перед началом работы.
+        /// </summary>
+        /// <param name="rootDirectory">The root directory for indexing. Корневая директория для индексирования.</param>
+        void InitializeProjectIndex(string rootDirectory);
+
+        /// <summary>
         /// Gets the directory of the solution.
         /// Получает каталог решения.
         /// </summary>

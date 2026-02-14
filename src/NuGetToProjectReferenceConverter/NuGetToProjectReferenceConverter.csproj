@@ -56,6 +56,10 @@
     <Compile Include="Services\MapFiles\MapFileService.cs" />
     <Compile Include="Services\Paths\IPathService.cs" />
     <Compile Include="Services\Paths\PathService.cs" />
+    <Compile Include="Services\Indexing\IProjectIndexService.cs" />
+    <Compile Include="Services\Indexing\ProjectIndexService.cs" />
+    <Compile Include="Tools\FileLogger.cs" />
+    <Compile Include="Tools\PerformanceLogger.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="source.extension.vsixmanifest">
@@ -73,10 +77,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.12.40392" ExcludeAssets="runtime">
+    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.14.40265" ExcludeAssets="runtime">
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="17.12.2069" />
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="17.14.2120">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <VSCTCompile Include="NuGetToProjectReferenceConverterPackage.vsct">
