@@ -33,6 +33,11 @@ namespace NuGetToProjectReferenceConverter.Services.MapFile
             _map = new Dictionary<string, string>();
         }
 
+        /// <summary>
+        /// Gets the path to the map file.
+        /// Получает путь к файлу карты.
+        /// </summary>
+        /// <returns>The path to the map file. Путь к файлу карты.</returns>
         private string GetMapFilePath()
         {
             if (_mapFilePath != null)
@@ -76,6 +81,9 @@ namespace NuGetToProjectReferenceConverter.Services.MapFile
             {
                 var json = stream.ReadToEnd();
                 var loadedMap = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
+
+                _map.Clear();
+
                 foreach (var kvp in loadedMap)
                 {
                     _map[kvp.Key] = kvp.Value != null 

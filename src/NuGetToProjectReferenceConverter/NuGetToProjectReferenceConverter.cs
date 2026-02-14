@@ -49,6 +49,7 @@ namespace NuGetToProjectReferenceConverter
             _complited.Clear();
 
             var projects = _solutionService.GetAllProjects().ToArray();
+
             foreach (var project in projects)
             {
                 ReplaceNuGetReferencesWithProjectReferences(project);
@@ -57,6 +58,11 @@ namespace NuGetToProjectReferenceConverter
             _mapFileService.Save();
         }
 
+        /// <summary>
+        /// Replaces NuGet references with project references in the specified project.
+        /// Заменяет ссылки NuGet на ссылки на проекты в указанном проекте.
+        /// </summary>
+        /// <param name="project">The project to process. Проект для обработки.</param>
         private void ReplaceNuGetReferencesWithProjectReferences(EnvDTE.Project project)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -94,6 +100,7 @@ namespace NuGetToProjectReferenceConverter
                             msbuildProject.RemoveItem(packageReference);
 
                             var addedItems = AddProjectReference(project, msbuildProject, projectReferencePath);
+
                             foreach (var item in addedItems)
                             {
                                 ReplaceNuGetReferencesWithProjectReferences(item);
@@ -106,6 +113,14 @@ namespace NuGetToProjectReferenceConverter
             }
         }
 
+        /// <summary>
+        /// Adds a project reference to the specified project.
+        /// Добавляет ссылку на проект в указанный проект.
+        /// </summary>
+        /// <param name="project">The project to add reference to. Проект, в который добавляется ссылка.</param>
+        /// <param name="msbuildProject">The MSBuild project. Проект MSBuild.</param>
+        /// <param name="projectReferencePath">The path to the project reference. Путь к ссылке на проект.</param>
+        /// <returns>Array of added projects. Массив добавленных проектов.</returns>
         private EnvDTE.Project[] AddProjectReference(EnvDTE.Project project, Project msbuildProject, string projectReferencePath)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
@@ -129,11 +144,18 @@ namespace NuGetToProjectReferenceConverter
             return resultItems;
         }
 
+        /// <summary>
+        /// Finds a project path by package ID using the map file.
+        /// Находит путь к проекту по ID пакета используя файл карты.
+        /// </summary>
+        /// <param name="packageId">The package ID. ID пакета.</param>
+        /// <returns>The project path or null. Путь к проекту или null.</returns>
         private string FindProjectPathByPackageId(string packageId)
         {
             if (!_mapFileService.Get(packageId, out string projectPath))
             {
                 _mapFileService.AddOrUpdate(packageId, null);
+                return null;
             }
 
             return projectPath;

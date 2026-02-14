@@ -17,17 +17,11 @@ namespace NuGetToProjectReferenceConverter.Services.Solutions
 
         /// <summary>
         /// Adds a project to the current replaced projects folder.
-        /// Добавляет проект в текущую папку замененных проектов.
+        /// Добавляет проект в текущую папку заменённых проектов.
         /// </summary>
         /// <param name="projectPath">The path to the project. Путь к проекту.</param>
+        /// <param name="addedList">The list of added projects. Список добавленных проектов.</param>
         void AddProjectToReplacedProjectsFolder(string projectPath, List<string> addedList);
-
-        /// <summary>
-        /// Initializes the project index before starting work.
-        /// Инициализирует индекс проектов перед началом работы.
-        /// </summary>
-        /// <param name="rootDirectory">The root directory for indexing. Корневая директория для индексирования.</param>
-        void InitializeProjectIndex(string rootDirectory);
 
         /// <summary>
         /// Gets the directory of the solution.
